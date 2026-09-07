@@ -1,47 +1,99 @@
-export default function Page() {
+import Link from 'next/link'
+import { redirect } from 'next/navigation'
+import { headers } from 'next/headers'
+import { auth } from '@/lib/auth'
+import { Logo } from '@/components/logo'
+import { Button } from '@/components/ui/button'
+import { HeartPulse, Wind, MessageCircleHeart, Sparkles } from 'lucide-react'
+
+const FEATURES = [
+  {
+    icon: HeartPulse,
+    title: 'Mood tracking',
+    body: 'Check in daily and watch gentle patterns emerge over time — no judgment, just awareness.',
+  },
+  {
+    icon: Wind,
+    title: 'Calming exercises',
+    body: 'Guided breathing, 5-4-3-2-1 grounding, a meditation timer, and a gratitude journal.',
+  },
+  {
+    icon: MessageCircleHeart,
+    title: 'AI companion',
+    body: 'Talk things through anytime with a warm, always-available companion that listens.',
+  },
+]
+
+export default async function LandingPage() {
+  const session = await auth.api.getSession({ headers: await headers() })
+  if (session?.user) redirect('/dashboard')
+
   return (
-    <main
-      style={{
-        colorScheme: 'light dark',
-        position: 'relative',
-        display: 'flex',
-        minHeight: '100vh',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'light-dark(#fff, #000)',
-        color: 'light-dark(#000, #fff)',
-      }}
-    >
-      <svg
-        aria-hidden="true"
-        style={{ width: 80, height: 80 }}
-        width={80}
-        height={80}
-        fill="none"
-        viewBox="0 0 20 20"
-        xmlns="http://www.w3.org/2000/svg"
-        stroke="currentColor"
-        strokeWidth="0.5"
-      >
-        <path
-          d="M14.2 14.2H17V6.9375C17 4.76288 15.2371 3 13.0625 3H5.8V5.8M14.2 14.2V7.79063L7.79062 14.2H14.2ZM14.2 14.2V17H6.9375C4.76288 17 3 15.2371 3 13.0625V5.8H5.8M5.8 5.8V12.2313L12.2313 5.8H5.8Z"
-          strokeLinejoin="round"
-        />
-      </svg>
-      <p
-        style={{
-          position: 'absolute',
-          left: '50%',
-          top: 'calc(50% + 56px)',
-          transform: 'translateX(-50%)',
-          whiteSpace: 'nowrap',
-          fontSize: '14px',
-          fontWeight: 500,
-          color: 'light-dark(#71717a, #a1a1aa)',
-        }}
-      >
-        Your v0 generation will show here.
-      </p>
-    </main>
+    <div className="flex min-h-svh flex-col">
+      <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-5">
+        <div className="flex items-center gap-2.5">
+          <Logo className="size-9" />
+          <span className="font-display text-xl font-bold tracking-tight">
+            HopeAI
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button asChild variant="ghost">
+            <Link href="/sign-in">Sign in</Link>
+          </Button>
+          <Button asChild>
+            <Link href="/sign-up">Get started</Link>
+          </Button>
+        </div>
+      </header>
+
+      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-6">
+        <section className="flex flex-col items-center gap-6 py-16 text-center md:py-24">
+          <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-1.5 text-sm text-muted-foreground">
+            <Sparkles className="size-4 text-primary" />
+            Your gentle mental health companion
+          </span>
+          <h1 className="max-w-3xl font-display text-4xl font-bold leading-tight tracking-tight text-balance md:text-6xl">
+            A calmer mind, one small check-in at a time
+          </h1>
+          <p className="max-w-xl text-lg text-muted-foreground text-pretty">
+            HopeAI helps you understand your feelings, find calm in hard
+            moments, and feel a little lighter every day.
+          </p>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Button asChild size="lg" className="text-base">
+              <Link href="/sign-up">Start for free</Link>
+            </Button>
+            <Button asChild size="lg" variant="outline" className="text-base">
+              <Link href="/sign-in">I have an account</Link>
+            </Button>
+          </div>
+        </section>
+
+        <section className="grid gap-5 pb-20 md:grid-cols-3">
+          {FEATURES.map(({ icon: Icon, title, body }) => (
+            <div
+              key={title}
+              className="flex flex-col gap-3 rounded-3xl border border-border bg-card p-7"
+            >
+              <span className="flex size-12 items-center justify-center rounded-2xl bg-primary/12 text-primary">
+                <Icon className="size-6" />
+              </span>
+              <h2 className="font-display text-xl font-semibold">{title}</h2>
+              <p className="leading-relaxed text-muted-foreground text-pretty">
+                {body}
+              </p>
+            </div>
+          ))}
+        </section>
+      </main>
+
+      <footer className="mx-auto w-full max-w-6xl px-6 py-8 text-sm text-muted-foreground">
+        <p className="text-pretty">
+          HopeAI offers support and reflection, not medical care. In a crisis,
+          call or text 988 (US) or your local emergency number.
+        </p>
+      </footer>
+    </div>
   )
 }
