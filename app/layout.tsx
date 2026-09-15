@@ -14,10 +14,16 @@ const quicksand = Quicksand({
 })
 
 export const metadata: Metadata = {
-  title: 'HopeAI — Your calm companion',
+  title: 'HopeAI - Your calm companion',
   description:
-    'A gentle mental health companion with mood tracking, calming exercises, and a supportive AI chat to help you feel a little lighter each day.',
+    'A gentle mental health companion with mood tracking, calming exercises, and a supportive AI chat to help you feel more grounded.',
   generator: 'v0.app',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'HopeAI',
+  },
   icons: {
     icon: [
       {
@@ -35,30 +41,4 @@ export const metadata: Metadata = {
     ],
     apple: '/apple-icon.png',
   },
-}
-
-export const viewport: Viewport = {
-  colorScheme: 'light dark',
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: 'white' },
-    { media: '(prefers-color-scheme: dark)', color: 'black' },
-  ],
-}
-
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode
-}>) {
-  return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${quicksand.variable} bg-background`}
-    >
-      <body className="font-sans antialiased">
-        {children}
-        {process.env.NODE_ENV === 'production' && <Analytics />}
-      </body>
-    </html>
-  )
 }
