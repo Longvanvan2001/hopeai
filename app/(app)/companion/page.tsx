@@ -72,6 +72,12 @@ const sendMessage = () => {
           Send
         </button>
       </div>
+            <button
+        onClick={() => setShowCrisis(true)}
+        className="fixed bottom-24 right-4 bg-red-600 text-white w-14 h-14 rounded-full font-bold shadow-lg z-40 flex items-center justify-center"
+      >
+        SOS
+      </button>
           {showCrisis && <CrisisSupport onClose={() => setShowCrisis(false)} />}
     </div>
   )
