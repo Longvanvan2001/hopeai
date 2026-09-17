@@ -88,12 +88,29 @@ export default async function LandingPage() {
         </section>
       </main>
 
+      {/* PRICING - MONEY MAKING */}
+      <section className="py-16 text-center bg-gray-50 mx-4 rounded-2xl my-8">
+        <h2 className="text-3xl font-bold mb-4">Support HopeAI 💙</h2>
+        <p className="mb-6 text-gray-600">Help keep mental health free for Ghana</p>
+        <div className="flex flex-col md:flex-row justify-center gap-4">
+          <div className="border p-6 rounded-xl bg-white">
+            <h3 className="font-bold">Free</h3>
+            <p className="text-sm">$0/month</p>
+            <p className="text-xs">10 chats/day</p>
+          </div>
+          <div className="border-2 border-blue-600 p-6 rounded-xl bg-blue-50">
+            <h3 className="font-bold">Premium - $5/mo</h3>
+            <p className="text-sm">Unlimited chats + voice</p>
+            <button className="bg-blue-600 text-white px-6 py-2 rounded-full mt-3">Subscribe</button>
+          </div>
+        </div>
+      </section>
+
       <footer className="mx-auto w-full max-w-6xl px-6 py-8 text-sm text-muted-foreground">
         <p className="text-pretty">
           HopeAI offers support and reflection, not medical care. In a crisis,
-          call or text 988 (US) or your local emergency number.
+          call or text 112 (Ghana) or your local emergency number.
         </p>
       </footer>
-    </div>
   )
 }
