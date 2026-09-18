@@ -40,6 +40,14 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* PAYSTACK VERIFICATION - Business Info */}
+<div className="mx-auto max-w-3xl px-6 py-6 mt-8 border rounded-xl bg-white text-xs text-gray-600">
+  <h4 className="font-bold text-sm text-black mb-2">Business Information for Paystack Verification</h4>
+  <p><strong>Business Name:</strong> HopeAI</p>
+  <p><strong>What we do:</strong> HopeAI is a Ghana-based digital wellness platform providing AI emotional support chat, mood tracking, breathing exercises, and booking with licensed counselors. We sell a digital Premium subscription (20 GHS/month) for unlimited chats.</p>
+  <p><strong>Contact:</strong> hello@hopeai.com.gh | Accra, Greater Accra, Ghana</p>
+  <p><strong>Website:</strong> https://hopeai-eight.vercel.app/</p>
+</div>
       <footer className="mx-auto max-w-6xl px-8 py-8 text-center text-sm border-t mt-12">
         HopeAI offers support and reflection, not medical care. In crisis, call 112 (Ghana).
       </footer>
