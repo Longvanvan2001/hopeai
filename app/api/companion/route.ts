@@ -1,11 +1,12 @@
-export async function POST(req: Request) {
+import { NextRequest, NextResponse } from "next/server";
+
+export async function POST(req: NextRequest) {
   try {
-    const { messages } = await req.json();
-    const lastMessage = messages[messages.length - 1]?.content || "";
+    const { message } = await req.json();
     const apiKey = process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
-      return Response.json({ reply: "Add your API key in.env.local Masa" });
+      return NextResponse.json({ reply: "Configuration error: API key is missing. Please add it in Vercel." });
     }
 
     const response = await fetch(
@@ -14,25 +15,22 @@ export async function POST(req: Request) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                {
-                  text: `You are Hope AI, a Ghanaian assistant. Friendly, wise, helpful. User said: ${lastMessage}. Respond helpfully in Pidgin/English mix if needed.`
-                }
-              ]
-            }
-          ]
-        })
+          contents: [{ parts: [{ text: `You are Hope, a kind, empathetic mental health companion. Speak in clear, correct, professional, warm English. Never use pidgin, slang like chale, masa, dey, how you dey. User says: ${message}` }] }],
+        }),
       }
     );
 
     const data = await response.json();
-    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry Masa, try again.";
 
-    return Response.json({ reply });
-  } catch (e) {
-    console.error(e);
-    return Response.json({ reply: "Error Masa, check your internet" });
+    if (!response.ok) {
+      console.log(data);
+      return NextResponse.json({ reply: "Sorry, I'm having trouble connecting right now. Please try again in a moment." });
+    }
+
+    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm here to listen. Could you tell me more?";
+
+    return NextResponse.json({ reply });
+  } catch (error) {
+    return NextResponse.json({ reply: "Sorry, I'm having trouble connecting. Please try again." });
   }
 }
