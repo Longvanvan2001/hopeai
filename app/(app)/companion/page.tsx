@@ -6,7 +6,7 @@ type Msg = { role: "user" | "ai", text: string }
 export default function CompanionPage() {
   const [message, setMessage] = useState("")
   const [chat, setChat] = useState<Msg[]>([
-    { role: "ai", text: "Hello, I'm Hope, your supportive companion. I'm here to listen without judgment. How are you feeling today?" }
+ { role: "ai", text: "Hey chale! I'm Hope 💙 How you dey? What's on your mind today?" }
   ])
   const [showCrisis, setShowCrisis] = useState(false)
 const sendMessage = () => {
