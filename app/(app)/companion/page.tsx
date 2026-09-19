@@ -1,57 +1,51 @@
-import { NextRequest, NextResponse } from 'next/server';
-import OpenAI from 'openai';
+'use client';
+import { useState } from 'react';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+type Msg = { role: 'user' | 'ai'; text: string };
 
-const SYSTEM_PROMPT = `You are Hope - a warm Ghanaian friend. You chat like Meta AI: natural, short, human.
+export default function CompanionPage() {
+  const [messages, setMessages] = useState<Msg[]>([
+    { role: 'ai', text: "Hey chale! I'm Hope 💙 How you dey? What's on your mind today?" }
+  ]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
 
-If user says hello, hi, hey, good morning: reply with "Hey! How you dey? I'm here chale, what's up?" - NEVER say "Thank you for sharing" for a hello.
+  const send = async () => {
+    if (!input.trim()) return;
+    const userMsg: Msg = { role: 'user', text: input };
+    const newMsgs = [...messages, userMsg];
+    setMessages(newMsgs);
+    setInput('');
+    setLoading(true);
 
-If user shares feelings, keep it short: 1-2 sentences, warm, like "Ei, I hear you. That be tough." Ask one simple question.
-
-BAN these phrases: "Thank you for sharing that with me", "You don't have to carry this alone", "You are so brave", "I'm here to listen without judgment", "As an AI".
-
-Style: WhatsApp friend, short, warm, small pidgin. No long therapist talk.
-
-You are Hope, a friend. Not a therapist. If self-harm, say call 112 and talk to trusted person.`;
-
-export async function POST(req: NextRequest) {
-  try {
-    const { messages } = await req.json();
-
-    // Convert frontend format {role: "ai"/"user", text: "..."} to OpenAI format
-    const formatted = (messages || []).map((m: any) => ({
-      role: m.role === 'ai'? 'assistant' : 'user',
-      content: m.text || m.content || '',
-    }));
-
-    // If last message is just greeting, answer friendly fast without AI if needed
-    const last = formatted[formatted.length - 1]?.content?.toLowerCase()?.trim() || '';
-    if (['hello','hi','hey','hello!','hi there','good morning','good afternoon'].includes(last)) {
-      return NextResponse.json({ reply: "Hey chale! 😊 How you dey today? You good?" });
+    try {
+      const res = await fetch('/api/companion', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: newMsgs }),
+      });
+      const data = await res.json();
+      setMessages([...newMsgs, { role: 'ai', text: data.reply }]);
+    } catch {
+      setMessages([...newMsgs, { role: 'ai', text: "Ei small glitch, try again chale?" }]);
     }
+    setLoading(false);
+  };
 
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      temperature: 0.9,
-      top_p: 0.9,
-      messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-       ...formatted,
-      ],
-      max_tokens: 120,
-    });
-
-    const reply = completion.choices[0]?.message?.content || "Hey, I dey here. How you dey feel?";
-
-    return NextResponse.json({ reply });
-  } catch (error: any) {
-    console.error('Companion error:', error);
-    return NextResponse.json(
-      { reply: "Hey! How you dey? Small network glitch, say hello again?" },
-      { status: 200 }
-    );
-  }
+  return (
+    <div className="max-w-2xl mx-auto p-4 flex flex-col h-[80vh]">
+      <div className="flex-1 overflow-y-auto space-y-3 bg-gray-50 rounded-xl p-4">
+        {messages.map((m, i) => (
+          <div key={i} className={`p-3 rounded-xl max-w-[80%] ${m.role === 'user'? 'bg-blue-500 text-white ml-auto' : 'bg-white shadow'}`}>
+            {m.text}
+          </div>
+        ))}
+        {loading && <div className="text-sm text-gray-400">Hope dey type...</div>}
+      </div>
+      <div className="flex gap-2 mt-3">
+        <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && send()} placeholder="Type how you dey feel..." className="flex-1 border rounded-full px-4 py-2" />
+        <button onClick={send} className="bg-blue-600 text-white px-6 rounded-full">Send</button>
+      </div>
+    </div>
+  );
 }
