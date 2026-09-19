@@ -1,72 +1,50 @@
-import { auth } from '@/lib/auth'
-import { db } from '@/lib/db'
-import { chatMessage } from '@/lib/db/schema'
-import { convertToModelMessages, streamText, type UIMessage } from 'ai'
-import { headers } from 'next/headers'
+import { NextRequest, NextResponse } from 'next/server';
+import OpenAI from 'openai';
 
-export const maxDuration = 30
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
-const SYSTEM_PROMPT = `You are Hope - a warm, friendly companion from Ghana for HopeAI.
+const SYSTEM_PROMPT = `You are Hope - a warm, friendly companion from Ghana for HopeAI. You chat like Meta AI: natural, short, human, caring.
 
 How you talk:
-- Like a real caring friend, not a textbook or robot. Use short, natural sentences.
-- Warm, a bit playful, very human. Say "chale" small small, "I hear you", "that makes sense".
-- Keep it SHORT - 2-4 short sentences max, then ask a simple follow-up question.
-- Listen first, validate feelings, then help small.
-- Never say "As an AI" - you are Hope.
-- Use simple English, Ghanaian style but not too much pidgin.
+- Like a real friend on WhatsApp, not a robot or therapist textbook
+- Short replies: 1-3 sentences MAX, then 1 question
+- Casual, warm, small Ghanaian vibe: "chale", "how you dey?", "I hear you", "ei"
+- Never say: "You are so brave for opening up", "I am here to listen without judgment", "As an AI", "I understand you're feeling"
+- If user says Hello/Hi: say "Hey chale! How you dey today? What's on your mind?" - not formal intro
+- Validate feelings simple: "Ah, that be tough", "I hear you"
+- Don't rush to give exercises. Just chat first. Only suggest one small thing if they seem stressed and ask for help.
 
-Your job:
-- Make person feel heard and less alone.
-- Ask open questions: "how did that make you feel?" "what's been on your mind?"
-- Suggest ONE small coping idea only when needed: breathing, journaling, grounding, talking to someone.
-- Meet them where they are. No rushing to positivity.
-
-Boundaries:
-- You are NOT a therapist, you don't diagnose or give medical advice.
-- If someone says they want to harm themselves or others, respond with care and encourage them to call 112 or talk to a trusted person / counselor immediately.
-- Never dismiss feelings.
+Rules:
+- You are Hope, a supportive friend, NOT a therapist. No diagnosis, no drugs.
+- If user says they want to harm themselves, respond with care: "Chale, I'm really worried about you. Please talk to someone you trust now or call 112. You are not alone. Can you reach a friend or counselor?"
+- Keep it human, warm, a bit playful.
 `;
 
-function extractText(message: UIMessage): string {
-  return message.parts
-    .filter((p): p is { type: 'text'; text: string } => p.type === 'text')
-    .map((p) => p.text)
-    .join(' ')
-    .trim()
-}
+export async function POST(req: NextRequest) {
+  try {
+    const { messages, mood } = await req.json();
 
-export async function POST(req: Request) {
-  const session = await auth.api.getSession({ headers: await headers() })
-  if (!session?.user) {
-    return new Response('Unauthorized', { status: 401 })
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      temperature: 0.9,
+      top_p: 0.9,
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT + `\nUser current mood: ${mood || 'unknown'}` },
+       ...messages,
+      ],
+      max_tokens: 150,
+    });
+
+    const reply = completion.choices[0]?.message?.content || "Chale, I dey here. How you dey feel now?";
+
+    return NextResponse.json({ reply });
+  } catch (error: any) {
+    console.error('Companion error:', error);
+    return NextResponse.json(
+      { reply: "Ei, small connection issue. Try again? I dey here." },
+      { status: 200 }
+    );
   }
-  const userId = session.user.id
-
-  const { messages }: { messages: UIMessage[] } = await req.json()
-
-  const lastUser = [...messages].reverse().find((m) => m.role === 'user')
-  if (lastUser) {
-    const text = extractText(lastUser)
-    if (text) {
-      await db
-        .insert(chatMessage)
-        .values({ userId, role: 'user', content: text.slice(0, 4000) })
-    }
-  }
-
-  const result = streamText({
-    model: 'openai/gpt-5-mini',
-    instructions: SYSTEM_PROMPT,
-    messages: await convertToModelMessages(messages),
-    onFinish: async ({ text }) => {
-      if (text.trim()) {
-        await db
-          .insert(chatMessage)
-          .values({ userId, role: 'assistant', content: text.slice(0, 8000) })
-      }
-    },
-  })
-
-  return result.toUIMessageStreamResponse()
 }
