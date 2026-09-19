@@ -75,7 +75,7 @@ export default function CompanionPage() {
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && send()}
             placeholder="Tell me how you dey feel..."
-            className="flex-1 bg-transparent outline-none text-[15px] py-2 placeholder:text-gray-400"
+className="flex-1 bg-transparent outline-none text-[15px] py-2 text-black placeholder:text-gray-400 font-medium"
           />
           <button onClick={send} disabled={loading} className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-600 to-indigo-600 text-white flex items-center justify-center hover:scale-105 transition disabled:opacity-50">
             ↑
