@@ -30,30 +30,34 @@ export default function CompanionPage() {
   };
 
   return (
-    <div className="flex flex-col h-screen max-w-3xl mx-auto p-4">
-      <div className="border-b pb-3 mb-4">
-        <h1 className="text-2xl font-bold">Hope - Your Companion</h1>
-        <p className="text-sm text-green-600">Online - listening</p>
+    <div className="flex flex-col h-screen max-w-3xl mx-auto p-4 bg-[#0a0a0a] text-white">
+      <div className="border-b border-gray-800 pb-3 mb-4">
+        <h1 className="text-2xl font-bold text-white">Hope - Your Companion</h1>
+        <p className="text-sm text-green-400">Online - listening</p>
       </div>
 
       <div className="flex-1 overflow-y-auto space-y-4 mb-4">
         {messages.map((m, i) => (
-          <div key={i} className={`p-3 rounded-lg ${m.role === "user"? "bg-blue-100 ml-auto max-w-[80%]" : "bg-gray-100 mr-auto max-w-[80%]"}`}>
+          <div key={i} className={`p-4 rounded-2xl max-w-[80%] leading-relaxed ${
+            m.role === "user" 
+              ? "bg-blue-600 text-white ml-auto" 
+              : "bg-zinc-800 text-white mr-auto border border-zinc-700"
+          }`}>
             {m.content}
           </div>
         ))}
-        {loading && <div className="text-gray-400 text-sm">Hope is typing...</div>}
+        {loading && <div className="text-gray-400 text-sm ml-2">Hope is typing...</div>}
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex gap-2 border-t border-gray-800 pt-4">
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && sendMessage()}
           placeholder="How are you feeling today?"
-          className="flex-1 border rounded-lg p-3"
+          className="flex-1 bg-zinc-900 border border-zinc-700 rounded-full px-5 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
         />
-        <button onClick={sendMessage} className="bg-black text-white px-6 rounded-lg">
+        <button onClick={sendMessage} className="bg-white text-black px-8 rounded-full font-semibold hover:bg-gray-200">
           Send
         </button>
       </div>
