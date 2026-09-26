@@ -1,86 +1,123 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
-type Msg = { role: "user" | "ai"; text: string };
+type Msg = { role: "user" | "assistant"; text: string };
 
 export default function CompanionPage() {
+  const router = useRouter();
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Msg[]>([
-    { role: "ai", text: "Hey there 👋 I'm Hope, your caring companion.\n\nI'm here to listen without judgment. Whether you're feeling stressed, anxious, happy, or just need someone to talk to - I'm here for you, 24/7.\n\nHow are you feeling right now?" }
+    { role: "assistant", text: "Hey there 👋 I'm Hope, your caring companion. I'm here to listen without judgment." }
   ]);
   const [loading, setLoading] = useState(false);
+  const [chatCount, setChatCount] = useState(0);
+  const [limitReached, setLimitReached] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, loading]);
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("hope_chat_count");
+    const savedDate = localStorage.getItem("hope_chat_date");
+    const today = new Date().toDateString();
+    if (savedDate!== today) {
+      localStorage.setItem("hope_chat_date", today);
+      localStorage.setItem("hope_chat_count", "0");
+      setChatCount(0);
+    } else if (saved) {
+      const c = parseInt(saved);
+      setChatCount(c);
+      if (c >= 10) setLimitReached(true);
+    }
+  }, []);
 
   const sendMessage = async () => {
     if (!input.trim() || loading) return;
-    const userMessage = input;
-    setMessages(prev => [...prev, { role: "user", text: userMessage }]);
+
+    if (chatCount >= 10) {
+      setLimitReached(true);
+      return;
+    }
+
+    const userText = input.trim();
     setInput("");
+    const newMessages: Msg[] = [...messages, { role: "user", text: userText }];
+    setMessages(newMessages);
     setLoading(true);
+
     try {
+      const historyForAPI = newMessages.slice(-8).map(m => ({
+        role: m.role,
+        content: m.text
+      }));
+
       const res = await fetch("/api/companion", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: userMessage }),
+        body: JSON.stringify({
+          message: userText,
+          history: historyForAPI.slice(0, -1),
+        }),
       });
+
       const data = await res.json();
-      const aiText = data.reply || data.message || data.content || "I'm here with you. Tell me more about what's on your mind.";
-      setMessages(prev => [...prev, { role: "ai", text: aiText }]);
-    } catch {
-      setMessages(prev => [...prev, { role: "ai", text: "I'm still here with you, even if my connection is slow. Take a deep breath. What's on your heart?" }]);
+      const aiReply = data.reply || data.text || "I'm here with you, tell me more?";
+
+      setMessages(prev => [...prev, { role: "assistant", text: aiReply }]);
+
+      const newCount = chatCount + 1;
+      setChatCount(newCount);
+      localStorage.setItem("hope_chat_count", newCount.toString());
+      if (newCount >= 10) setLimitReached(true);
+
+    } catch (e) {
+      console.error(e);
+      setMessages(prev => [...prev, { role: "assistant", text: "I'm here - had a small hiccup, want to try again?" }]);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
-    <div className="flex flex-col h-[90vh] bg-[#f8fafc]">
-      <div className="bg-white border-b px-6 py-4 flex items-center gap-3 shadow-sm">
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center text-white font-bold">H</div>
-        <div>
-          <h1 className="font-bold text-gray-900">Hope</h1>
-          <p className="text-xs text-green-600 font-medium">● Online • Private & Safe</p>
-        </div>
+    <div className="flex flex-col h-[85vh] max-w-2xl mx-auto p-4 bg-white text-black">
+      <div className="flex justify-between items-center p-3 bg-gray-100 rounded-lg mb-2 border">
+        <h1 className="font-bold text-black">Hope Companion</h1>
+        <span className="text-sm text-gray-700">{chatCount}/10 chats today</span>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 max-w-3xl mx-auto w-full">
+      <div className="flex-1 overflow-y-auto space-y-3 mb-4 p-2">
         {messages.map((m, i) => (
-          <div key={i} className={`flex ${m.role === "user"? "justify-end" : "justify-start"}`}>
-            <div className={`max-w-[85%] px-5 py-3.5 rounded-[20px] text-[15px] leading-[1.6] whitespace-pre-wrap shadow-sm
-              ${m.role === "user"
-              ? "bg-blue-600 text-white rounded-br-[6px]"
-                : "bg-white text-gray-800 border border-gray-100 rounded-bl-[6px]"}`}>
-              {m.text}
-            </div>
+          <div key={i} className={`p-3 rounded-lg max-w-[80%] text-[15px] leading-relaxed ${m.role === "user"? "bg-blue-600 text-white ml-auto" : "bg-gray-200 text-black border border-gray-300 mr-auto"}`}>
+            {m.text}
           </div>
         ))}
-        {loading && (
-          <div className="flex justify-start">
-            <div className="bg-white border border-gray-100 px-5 py-3.5 rounded-[20px] rounded-bl-[6px] text-gray-500 text-sm">Hope is thinking...</div>
-          </div>
-        )}
+        {loading && <div className="bg-gray-200 text-black border p-3 rounded-lg w-fit text-sm">Hope is thinking...</div>}
         <div ref={bottomRef} />
       </div>
 
-      <div className="bg-white border-t p-4">
-        <div className="max-w-3xl mx-auto flex gap-3 items-center">
-          <input
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={e => e.key === "Enter" && sendMessage()}
-            placeholder="Share how you feel..."
-            className="flex-1 px-5 py-3.5 rounded-full bg-gray-100 text-gray-900 placeholder-gray-500 outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
-          />
-          <button
-            onClick={sendMessage}
-            disabled={loading ||!input.trim()}
-            className="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 disabled:opacity-40 transition-all shadow-md"
-          >
-            ↑
+      {limitReached && (
+        <div className="border-2 border-orange-400 bg-orange-50 p-4 rounded-lg text-center mb-3">
+          <p className="font-bold text-orange-700">You have reached 10 chats today</p>
+          <p className="text-sm mb-3 text-black">Free limit reached. Upgrade for unlimited 24/7 support</p>
+          <button onClick={() => router.push("/pricing")} className="bg-orange-500 text-white px-8 py-3 rounded-full font-bold text-lg hover:bg-orange-600">
+            Upgrade to Premium - $8
           </button>
         </div>
-        <p className="text-[11px] text-center text-gray-400 mt-3">Hope is an AI companion, not a medical professional. If you are in crisis, please contact a trusted person or local helpline.</p>
+      )}
+
+      <div className="flex gap-2">
+        <input
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+          placeholder={limitReached? "Upgrade to continue..." : "Type your message..."}
+          disabled={limitReached || loading}
+          className="flex-1 border border-gray-400 rounded-full px-4 py-3 focus:outline-none text-black bg-white disabled:bg-gray-100"
+        />
+        <button onClick={sendMessage} disabled={loading || limitReached ||!input.trim()} className="bg-black text-white px-6 py-3 rounded-full font-bold disabled:bg-gray-400">
+          Send
+        </button>
       </div>
     </div>
   );
