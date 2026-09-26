@@ -1,56 +1,32 @@
+"use client";
 import Link from "next/link";
-import PaystackButton from "@/components/PaystackButton";
 
-export default function LandingPage() {
+export default function HomePage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-blue-50">
-      <header className="mx-auto w-full max-w-6xl px-6 py-4 flex justify-between items-center">
-        <h2 className="font-bold text-xl">HopeAI - Mental Wellness</h2>
-        <div className="flex gap-3">
-          <Link href="/sign-in" className="px-4 py-2 border rounded-lg text-sm">Log In</Link>
-          <Link href="/sign-up" className="px-4 py-2 bg-black text-white rounded-lg text-sm">Sign Up</Link>
+    <div className="min-h-screen bg-white">
+      <nav className="flex justify-between items-center px-6 md:px-10 py-4 border-b">
+        <div className="font-bold text-xl flex items-center gap-2">
+          <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center text-white">H</div>
+          HopeAI
         </div>
-      </header>
-
-      <section className="mx-auto w-full max-w-6xl px-6 py-12 text-center">
-        <h1 className="text-5xl font-bold">HopeAI - Your Support Companion</h1>
-        <p className="mt-4 text-gray-600">Support and reflection, not medical care. Your 24/7 wellness partner in Ghana.</p>
-        <div className="mt-6 flex justify-center gap-4">
-          <Link href="/sign-up" className="px-6 py-3 bg-blue-600 text-white rounded-full">Get Started Free</Link>
-          <Link href="/sign-in" className="px-6 py-3 border rounded-full">Log In</Link>
+        <div className="flex gap-3 items-center">
+          <Link href="/sign-in" className="px-4 py-2 text-sm font-semibold text-gray-700 hover:text-black">Log In</Link>
+          <Link href="/sign-up" className="px-5 py-2.5 bg-black text-white rounded-full text-sm font-bold hover:bg-gray-800">Get Started Free</Link>
         </div>
-      </section>
+      </nav>
 
-      <section className="mx-auto w-full max-w-3xl px-6 py-8">
-        <div className="grid md:grid-cols-2 gap-6">
-          <div className="border p-6 rounded-xl bg-white">
-            <h3 className="font-bold">Free</h3>
-            <p className="text-2xl font-bold">$0/month</p>
-            <p className="text-sm text-gray-600 mt-2">10 chats/day + Mood tracking</p>
-            <Link href="/sign-up" className="mt-4 block text-center border py-2 rounded-lg">Start Free</Link>
-          </div>
-          <div className="border-2 border-blue-600 p-6 rounded-xl bg-blue-50">
-            <h3 className="font-bold">Premium - 20 GHS/mo</h3>
-            <div className="mt-4"><PaystackButton /></div>
-            <div className="mt-4 text-xs text-gray-600 border-t pt-3">
-              <p><strong>Business:</strong> HopeAI Ghana digital wellness platform - AI support, mood tracking, counselor booking. Digital subscription.</p>
-              <p className="mt-1"><strong>Contact:</strong> hello@hopeai.com.gh | Accra, Ghana</p>
-            </div>
-          </div>
+      <div className="text-center px-6 py-20 md:py-28 max-w-3xl mx-auto">
+        <p className="inline-block px-4 py-1.5 bg-green-50 text-green-700 rounded-full text-xs font-bold mb-6">Private • Safe • For Ghana & The World</p>
+        <h1 className="text-4xl md:text-5xl font-black leading-tight text-black">Your gentle companion for every moment</h1>
+        <p className="mt-6 text-lg text-gray-600">
+          Support and reflection, not medical care. Your 24/7 wellness partner in Ghana and beyond.
+        </p>
+        <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+          <Link href="/sign-up" className="px-8 py-4 bg-blue-600 text-white rounded-full font-bold text-base shadow-lg hover:bg-blue-700">Create Free Account →</Link>
+          <Link href="/sign-in" className="px-8 py-4 bg-gray-100 text-black rounded-full font-bold text-base hover:bg-gray-200">Log In</Link>
         </div>
-      </section>
-
-      {/* PAYSTACK VERIFICATION - Business Info */}
-<div className="mx-auto max-w-3xl px-6 py-6 mt-8 border rounded-xl bg-white text-xs text-gray-600">
-  <h4 className="font-bold text-sm text-black mb-2">Business Information for Paystack Verification</h4>
-  <p><strong>Business Name:</strong> HopeAI</p>
-  <p><strong>What we do:</strong> HopeAI is a Ghana-based digital wellness platform providing AI emotional support chat, mood tracking, breathing exercises, and booking with licensed counselors. We sell a digital Premium subscription (20 GHS/month) for unlimited chats.</p>
-  <p><strong>Contact:</strong> hello@hopeai.com.gh | Accra, Greater Accra, Ghana</p>
-  <p><strong>Website:</strong> https://hopeai-eight.vercel.app/</p>
-</div>
-      <footer className="mx-auto max-w-6xl px-8 py-8 text-center text-sm border-t mt-12">
-        HopeAI offers support and reflection, not medical care. In crisis, call 112 (Ghana).
-      </footer>
+        <p className="mt-4 text-xs text-gray-400">No credit card needed • Private & secure</p>
+      </div>
     </div>
   );
 }

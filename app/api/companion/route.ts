@@ -1,36 +1,57 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   try {
-    const { message } = await req.json();
-    const apiKey = process.env.GEMINI_API_KEY;
+    const body = await req.json();
+    const userMessage = body.message || body.input || "";
 
-    if (!apiKey) {
-      return NextResponse.json({ reply: "Configuration error: API key is missing. Please add it in Vercel." });
+    if (!userMessage.trim()) {
+      return NextResponse.json({ reply: "Hey, I'm here. How are you really feeling today?" });
     }
 
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: `You are Hope, a kind, empathetic mental health companion. Speak in clear, correct, professional, warm English. Never use pidgin, slang like chale, masa, dey, how you dey. User says: ${message}` }] }],
-        }),
-      }
-    );
+    const prompt = `You are Hope, a warm, real human best friend from Ghana who also understands the whole world. You are NOT a robot, NOT an AI assistant.
 
-    const data = await response.json();
+RULES TO SOUND HUMAN:
+- Talk like a real caring friend texting - use "I'm", "you're", "hmm", "yeah"
+- Keep replies SHORT: 1-2 sentences only, max 25 words
+- Never say "As an AI", "I understand", "How can I assist"
+- Show real empathy: "that sounds heavy", "I hear you", "makes sense"
+- Ask 1 small follow-up question to keep them talking
+- Use natural pauses, not perfect grammar
+- If they are sad, be soft and comforting, not cheerful fake
 
-    if (!response.ok) {
-      console.log(data);
-      return NextResponse.json({ reply: "Sorry, I'm having trouble connecting right now. Please try again in a moment." });
+EXAMPLES:
+User: I'm stressed
+You: Ahh that heavy feeling is tough, I hear you. What's been weighing on you most today?
+
+User: I feel lonely
+You: Thanks for telling me that, it takes courage. I'm right here with you now - what usually helps you feel a bit less alone?
+
+User: I failed my exam
+You: Oof, that hurts, I'm sorry. It makes sense to feel down. Want to talk about what happened?
+
+Now respond to: ${userMessage}
+Your reply as Hope:`;
+
+    const res = await fetch(`https://text.pollinations.ai/${encodeURIComponent(prompt)}`, { cache: 'no-store' });
+    let reply = await res.text();
+
+    // Clean up
+    reply = reply.replace(/Hope:\s*/i, "").trim().split("\n")[0].trim();
+
+    if (!reply || reply.length < 5) {
+      reply = "I hear you. That sounds like a lot. Want to tell me a bit more about it?";
     }
 
-    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm here to listen. Could you tell me more?";
+    return NextResponse.json({
+      reply: reply,
+      message: reply,
+      content: reply
+    });
 
-    return NextResponse.json({ reply });
-  } catch (error) {
-    return NextResponse.json({ reply: "Sorry, I'm having trouble connecting. Please try again." });
+  } catch (err) {
+    return NextResponse.json({
+      reply: "I'm here with you, even if my connection is slow. Take a slow breath with me. What's on your heart right now?"
+    });
   }
 }

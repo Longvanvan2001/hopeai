@@ -12,6 +12,7 @@ const LINKS = [
   { href: '/mood', label: 'Mood', icon: HeartPulse },
   { href: '/exercises', label: 'Calm', icon: Wind },
   { href: '/companion', label: 'Companion', icon: MessageCircleHeart },
+  { href: '/pricing', label: 'Upgrade ✨', icon: Home },
 ]
 
 export function AppNav({ name }: { name: string }) {
